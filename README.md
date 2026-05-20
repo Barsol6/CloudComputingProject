@@ -183,39 +183,63 @@ fail: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[7]
 Weryfikacja rozmiaru, architektury oraz sum kontrolnych manifestu:
 
 ```Bash
-docker buildx imagetools inspect barsol/cloudcomputingproject:latest
+docker buildx imagetools inspect barsol/cloudcomputingproject:latest --raw
 ```
 
 Wynik:
 
 ```Bash
-Barsol@barsol-pc:~$ docker buildx imagetools inspect barsol/cloudcomputingproject:latest
-Name:      docker.io/barsol/cloudcomputingproject:latest
-MediaType: application/vnd.oci.image.index.v1+json
-Digest:    sha256:46632076a986e80d1011e05ace8c732784c0f2eb1aa06d26b74e8ab3df894de2
-           
-Manifests: 
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    linux/amd64
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    linux/arm64
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:71dc4353cd2cc46d03a29cdc41fb006826b5fdbae34ca27607723b14f57b0da0
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    unknown/unknown
-  Annotations: 
-    vnd.docker.reference.type:   attestation-manifest
-    vnd.docker.reference.digest: sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:acf10caaa18ece084331fab2a60af87b5c45f412171841d62be5e708dc3a03b4
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    unknown/unknown
-  Annotations: 
-    vnd.docker.reference.digest: sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538
-    vnd.docker.reference.type:   attestation-manifest
+Barsol@barsol-pc:~$ docker buildx imagetools inspect barsol/cloudcomputingproject:latest --raw
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.index.v1+json",
+  "manifests": [
+    {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67",
+      "size": 2001,
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      }
+    },
+    {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538",
+      "size": 2001,
+      "platform": {
+        "architecture": "arm64",
+        "os": "linux"
+      }
+    },
+    {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:71dc4353cd2cc46d03a29cdc41fb006826b5fdbae34ca27607723b14f57b0da0",
+      "size": 564,
+      "annotations": {
+        "vnd.docker.reference.digest": "sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67",
+        "vnd.docker.reference.type": "attestation-manifest"
+      },
+      "platform": {
+        "architecture": "unknown",
+        "os": "unknown"
+      }
+    },
+    {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:acf10caaa18ece084331fab2a60af87b5c45f412171841d62be5e708dc3a03b4",
+      "size": 564,
+      "annotations": {
+        "vnd.docker.reference.digest": "sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538",
+        "vnd.docker.reference.type": "attestation-manifest"
+      },
+      "platform": {
+        "architecture": "unknown",
+        "os": "unknown"
+      }
+    }
+  ]
+}
 ```
 
 ### e. Zliczenie dokładnej ilości warstw wchodzących w skład obrazu:
