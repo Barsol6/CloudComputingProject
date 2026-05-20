@@ -180,75 +180,44 @@ fail: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[7]
 
 ### d. Sprawdzenie, ile warstw posiada zbudowany obraz oraz jaki jest rozmiar obrazu
 
-Weryfikacja rozmiaru, architektury oraz sum kontrolnych manifestu:
+Weryfikacja rozmiaru, architektury oraz sum kontrolnych manifestu.  Każda linia w drugim wyniku, która ma przypisany rozmiar większy niż 0B (i nie jest tylko metadaną typu ENV czy WORKDIR), to jedna warstwa Twojego obrazu.
 
 ```Bash
-docker buildx imagetools inspect barsol/cloudcomputingproject:latest --raw
+docker images barsol/cloudcomputingproject:latest
+docker history barsol/cloudcomputingproject:latest
 ```
 
 Wynik:
 
 ```Bash
-Barsol@barsol-pc:~$ docker buildx imagetools inspect barsol/cloudcomputingproject:latest --raw
-{
-  "schemaVersion": 2,
-  "mediaType": "application/vnd.oci.image.index.v1+json",
-  "manifests": [
-    {
-      "mediaType": "application/vnd.oci.image.manifest.v1+json",
-      "digest": "sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67",
-      "size": 2001,
-      "platform": {
-        "architecture": "amd64",
-        "os": "linux"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.manifest.v1+json",
-      "digest": "sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538",
-      "size": 2001,
-      "platform": {
-        "architecture": "arm64",
-        "os": "linux"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.manifest.v1+json",
-      "digest": "sha256:71dc4353cd2cc46d03a29cdc41fb006826b5fdbae34ca27607723b14f57b0da0",
-      "size": 564,
-      "annotations": {
-        "vnd.docker.reference.digest": "sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67",
-        "vnd.docker.reference.type": "attestation-manifest"
-      },
-      "platform": {
-        "architecture": "unknown",
-        "os": "unknown"
-      }
-    },
-    {
-      "mediaType": "application/vnd.oci.image.manifest.v1+json",
-      "digest": "sha256:acf10caaa18ece084331fab2a60af87b5c45f412171841d62be5e708dc3a03b4",
-      "size": 564,
-      "annotations": {
-        "vnd.docker.reference.digest": "sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538",
-        "vnd.docker.reference.type": "attestation-manifest"
-      },
-      "platform": {
-        "architecture": "unknown",
-        "os": "unknown"
-      }
-    }
-  ]
-}
+Barsol@barsol-pc:~$ docker images barsol/cloudcomputingproject:latest
+                                                                                                                                                                                                                        i Info →   U  In Use
+IMAGE                                 ID             DISK USAGE   CONTENT SIZE   EXTRA
+barsol/cloudcomputingproject:latest   cc0a8a56c5ea        195MB         58.9MB    U   
+Barsol@barsol-pc:~$ docker history barsol/cloudcomputingproject:latest
+IMAGE          CREATED       CREATED BY                                      SIZE      COMMENT
+cc0a8a56c5ea   4 hours ago   ENTRYPOINT ["dotnet" "CloudComputingProject.…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   COPY /app/publish . # buildkit                  12.7MB    buildkit.dockerfile.v0
+<missing>      4 hours ago   WORKDIR /app                                    0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   HEALTHCHECK &{["CMD-SHELL" "wget --no-verbos…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   ENV ASPNETCORE_URLS=http://+:8080               0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   EXPOSE map[8080/tcp:{}]                         0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   WORKDIR /app                                    0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   USER app                                        0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   LABEL org.opencontainers.image.title=Cloud C…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   LABEL org.opencontainers.image.authors=Barto…   0B        buildkit.dockerfile.v0
+<missing>      8 days ago    COPY /dotnet /usr/share/dotnet # buildkit       27.3MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV ASPNET_VERSION=10.0.8                       0B        buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c ln -s /usr/share/dotnet/dotne…   4.1kB     buildkit.dockerfile.v0
+<missing>      8 days ago    COPY /dotnet /usr/share/dotnet # buildkit       82.8MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV DOTNET_VERSION=10.0.8                       0B        buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c addgroup         --gid=$APP_U…   24.6kB    buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c apk add --upgrade --no-cache …   3.02MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV APP_UID=1654 ASPNETCORE_HTTP_PORTS=8080 …   0B        buildkit.dockerfile.v0
+<missing>      4 weeks ago   CMD ["/bin/sh"]                                 0B        buildkit.dockerfile.v0
+<missing>      4 weeks ago   ADD alpine-minirootfs-3.23.4-x86_64.tar.gz /…   10.1MB    buildkit.dockerfile.v0
+Barsol@barsol-pc:~$ 
+
 ```
 
-### e. Zliczenie dokładnej ilości warstw wchodzących w skład obrazu:
-```bash
-   docker manifest inspect barsol/cloudcomputingproject:latest | grep -c "digest"
-```
 
-Wynik:
-```Bash
-Barsol@barsol-pc:~$    docker manifest inspect barsol/cloudcomputingproject:latest | grep -c "digest"
-4
-```
