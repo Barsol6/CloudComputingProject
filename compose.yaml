@@ -1,0 +1,7 @@
+﻿services:
+  cloudcomputingproject:
+    image: cloudcomputingproject
+    build:
+      context: .
+      dockerfile: CloudComputingProject/Dockerfile
+

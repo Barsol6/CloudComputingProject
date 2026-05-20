@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject WeatherService WeatherService
+@rendermode InteractiveServer
+<h3>Panel Pogodowy</h3>
+
+<select @bind="_selectedCity">
+    @foreach (var city in _availableCities)
+    {
+        <option value="@city">@city</option>
+    }
+</select>
+
+<button @onclick="LoadWeather">Sprawdź pogodę</button>
+
+@if (_currentWeather != null)
+{
+    <div style="margin-top: 20px; padding: 10px; border: 1px solid gray;">
+        <h4>Miasto: @_currentWeather.CityName</h4>
+        <p>Temperatura: @_currentWeather.Main.Temperature °C</p>
+        <p>Wilgotność: @_currentWeather.Main.Humidity %</p>
+        
+        <p>Opis: @_currentWeather.Weather[0].Description</p>
+        <img src="https://openweathermap.org/img/wn/@(_currentWeather.Weather[0].Icon)@@2x.png" alt="Ikona pogody" />
+    </div>
+}
+
+@code {
+    private string _selectedCity = "Warszawa"; 
+    private List<string> _availableCities = new() { "Warszawa", "Kraków", "Londyn", "Tokio", "Nowy Jork" };
+    private WeatherResponse? _currentWeather;
+
+    private async Task LoadWeather()
+    {
+        _currentWeather = await WeatherService.GetWeatherAsync(_selectedCity);
+    }
+}
