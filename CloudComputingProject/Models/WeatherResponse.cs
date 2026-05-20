@@ -27,7 +27,6 @@ public class WeatherDescription
     [JsonPropertyName("description")]
     public string Description { get; set; }
 
-    // Ten kod to nazwa obrazka, np. "10d"
     [JsonPropertyName("icon")]
     public string Icon { get; set; } 
 }
