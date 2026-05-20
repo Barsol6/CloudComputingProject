@@ -1,6 +1,6 @@
 ﻿# syntax=docker/dockerfile:1.4
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
 LABEL org.opencontainers.image.authors="Bartosz Solyga"
 LABEL org.opencontainers.image.title="Cloud Computing Project"
 USER app
