@@ -14,7 +14,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 RUN apk add --no-cache git openssh-client
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 WORKDIR /src
-RUN --mount=type=ssh git clone git@github.com:TwojLoginGithub/TwojeRepozytorium.git .
+RUN --mount=type=ssh git clone git@github.com:Barsol6/CloudComputingProject.git .
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages dotnet restore "CloudComputingProject.csproj"
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages dotnet build "CloudComputingProject.csproj" -c Release -o /app/build
 
