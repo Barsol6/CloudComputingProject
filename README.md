@@ -217,7 +217,37 @@ cc0a8a56c5ea   4 hours ago   ENTRYPOINT ["dotnet" "CloudComputingProject.…   0
 <missing>      4 weeks ago   CMD ["/bin/sh"]                                 0B        buildkit.dockerfile.v0
 <missing>      4 weeks ago   ADD alpine-minirootfs-3.23.4-x86_64.tar.gz /…   10.1MB    buildkit.dockerfile.v0
 Barsol@barsol-pc:~$ 
-
 ```
+
+
+
+# Zadanie 2
+
+
+## Opis Konfiguracji GitHub Actions
+
+W ramach realizacji zadania opracowano łańcuch CI/CD (pipeline) wykorzystujący mechanizm GitHub Actions, który poprawnie przeprowadza proces konteneryzacji. Proces składa się z następujących etapów:
+
+1. **Wsparcie Multi-Architecture (`linux/amd64`, `linux/arm64`)**: Zastosowano wtyczki `setup-qemu-action` i `setup-buildx-action`, które pozwalają platformie uruchomieniowej na cross kompilację.
+2. **Optymalizacja Cache'u w trybie Max**: Za uwierzytelnianie (Log in to DockerHub) odpowiadają specjalne wpisy (Secrets) `DOCKERHUB_USERNAME` i `DOCKERHUB_TOKEN`. Cache jest wgrywany przez backend i eksporter `registry` w trybie `mode=max`, co oznacza, że zachowane zostają warstwy pośrednie budowania aplikacji, znacznie przyspieszając kolejne uruchomienia.
+3. **Skanowanie podatności CVE obrazu (Trivy)**: Ponieważ Buildx nie wspiera eksportu multi-arch do wbudowanego lokalnego demona, użyto techniki dwuetapowej. Najpierw budowany jest lokalny obraz single-arch, który następnie skanowany jest narzędziem AquaSecurity Trivy. Konfiguracja wymusza kod błędu w przypadku wystąpienia awarii `exit-code: '1'` ze wskazaniem na podatności `severity: 'CRITICAL,HIGH'`. Skutkuje to zablokowaniem całego pipeline'u – jeśli obraz jest "dziurawy", nigdy nie dotrze do repozytorium docelowego GHCR.
+
+## Przyjęty sposób tagowania 
+
+Strategię dla końcowego obrazu podzielono na dwie strefy w celu zapewnienia maksymalnego bezpieczeństwa, separacji logiki cache'u i zachowania dobrych praktyk produkcyjnych (DevOps Best Practices).
+
+### 1. Tagowanie docelowych obrazów (GHCR)
+Obrazy docelowe, po pozytywnym przejściu weryfikacji Trivy, trafiają do repozytorium GitHub Container Registry i są natychmiast oznaczane dwoma tagami równocześnie:
+* **`latest`** (Mutable tag) – domyślny wskaźnik na świeżą, udaną budowę najnowszej wersji gałęzi głównej.
+* **`${{ github.sha }}`** (Immutable tag) – unikalny znacznik stanowiący hash konkretnego commita z platformy Git.
+
+**Uzasadnienie :** Zastosowanie tagu odpowiadającego SHA commita pozwala zachować pełną i jednoznaczną identyfikowalność (Traceability). Administrator operujący obrazem na produkcji zawsze posiada 100% pewności względem tego, z jakiego kawałka kodu źródłowego został zbudowany dany kontener. Poleganie wyłącznie na tagu `latest` może powodować problemy odtworzeniowe tzw. "Phantom Bugs" w przypadku nagłej awarii (rollback jest niesamowicie trudny, jeśli nie mamy wersji opartych o numer bądź SHA).
+
+### 2. Tagowanie danych w Cache'u (DockerHub)
+Dane Cache wyodrębniono do osobnego, **publicznego dedykowanego repozytorium u autora** o nazwie bazowej z sufiksem `-cache` (tj. `cloudcomputingproject-cache`). Obraz z "cachem" jest oznaczony specjalnym, statycznym tagiem **`:buildcache`**.
+
+**Uzasadnienie:** Wykorzystanie eksportera do rejestru ze wskaźnikiem na specjalnie oddzielone repozytorium skutecznie izoluje w pełni poprawne obrazy aplikacyjne od tzw. brudnych metadanych budowania. Dokumentacja *Docker Buildx / BuildKit* zaleca taką separację z racji faktu, że obrazy cache'owe składają się wyłącznie z binarnych zrzutów warstw bez manifestów uruchomieniowych – umieszczenie ich na obok oficjalnego obrazu skutkowałoby zanieczyszczeniem tagów pobieranych przez klientów i powiększaniem chaosu, dlatego zachowano czystą i hermetyczną segmentację tych danych pod jednym nadpisującym się tagiem `:buildcache`.
+
+---
 
 
