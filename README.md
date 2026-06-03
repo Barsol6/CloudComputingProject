@@ -180,51 +180,74 @@ fail: Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery[7]
 
 ### d. Sprawdzenie, ile warstw posiada zbudowany obraz oraz jaki jest rozmiar obrazu
 
-Weryfikacja rozmiaru, architektury oraz sum kontrolnych manifestu:
+Weryfikacja rozmiaru, architektury oraz sum kontrolnych manifestu.  Każda linia w drugim wyniku, która ma przypisany rozmiar większy niż 0B (i nie jest tylko metadaną typu ENV czy WORKDIR), to jedna warstwa Twojego obrazu.
 
 ```Bash
-docker buildx imagetools inspect barsol/cloudcomputingproject:latest
+docker images barsol/cloudcomputingproject:latest
+docker history barsol/cloudcomputingproject:latest
 ```
 
 Wynik:
 
 ```Bash
-Barsol@barsol-pc:~$ docker buildx imagetools inspect barsol/cloudcomputingproject:latest
-Name:      docker.io/barsol/cloudcomputingproject:latest
-MediaType: application/vnd.oci.image.index.v1+json
-Digest:    sha256:46632076a986e80d1011e05ace8c732784c0f2eb1aa06d26b74e8ab3df894de2
-           
-Manifests: 
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    linux/amd64
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    linux/arm64
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:71dc4353cd2cc46d03a29cdc41fb006826b5fdbae34ca27607723b14f57b0da0
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    unknown/unknown
-  Annotations: 
-    vnd.docker.reference.type:   attestation-manifest
-    vnd.docker.reference.digest: sha256:1bd4acfe05dae1acbd5e275b1753ee0d2f1a880ef533ee66116ffc6f16010f67
-               
-  Name:        docker.io/barsol/cloudcomputingproject:latest@sha256:acf10caaa18ece084331fab2a60af87b5c45f412171841d62be5e708dc3a03b4
-  MediaType:   application/vnd.oci.image.manifest.v1+json
-  Platform:    unknown/unknown
-  Annotations: 
-    vnd.docker.reference.digest: sha256:f71c644cca048bf0eee83742c0070c701835621c026c3801f2c3a068194e0538
-    vnd.docker.reference.type:   attestation-manifest
+Barsol@barsol-pc:~$ docker images barsol/cloudcomputingproject:latest
+                                                                                                                                                                                                                        i Info →   U  In Use
+IMAGE                                 ID             DISK USAGE   CONTENT SIZE   EXTRA
+barsol/cloudcomputingproject:latest   cc0a8a56c5ea        195MB         58.9MB    U   
+Barsol@barsol-pc:~$ docker history barsol/cloudcomputingproject:latest
+IMAGE          CREATED       CREATED BY                                      SIZE      COMMENT
+cc0a8a56c5ea   4 hours ago   ENTRYPOINT ["dotnet" "CloudComputingProject.…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   COPY /app/publish . # buildkit                  12.7MB    buildkit.dockerfile.v0
+<missing>      4 hours ago   WORKDIR /app                                    0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   HEALTHCHECK &{["CMD-SHELL" "wget --no-verbos…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   ENV ASPNETCORE_URLS=http://+:8080               0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   EXPOSE map[8080/tcp:{}]                         0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   WORKDIR /app                                    0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   USER app                                        0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   LABEL org.opencontainers.image.title=Cloud C…   0B        buildkit.dockerfile.v0
+<missing>      4 hours ago   LABEL org.opencontainers.image.authors=Barto…   0B        buildkit.dockerfile.v0
+<missing>      8 days ago    COPY /dotnet /usr/share/dotnet # buildkit       27.3MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV ASPNET_VERSION=10.0.8                       0B        buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c ln -s /usr/share/dotnet/dotne…   4.1kB     buildkit.dockerfile.v0
+<missing>      8 days ago    COPY /dotnet /usr/share/dotnet # buildkit       82.8MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV DOTNET_VERSION=10.0.8                       0B        buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c addgroup         --gid=$APP_U…   24.6kB    buildkit.dockerfile.v0
+<missing>      8 days ago    RUN /bin/sh -c apk add --upgrade --no-cache …   3.02MB    buildkit.dockerfile.v0
+<missing>      8 days ago    ENV APP_UID=1654 ASPNETCORE_HTTP_PORTS=8080 …   0B        buildkit.dockerfile.v0
+<missing>      4 weeks ago   CMD ["/bin/sh"]                                 0B        buildkit.dockerfile.v0
+<missing>      4 weeks ago   ADD alpine-minirootfs-3.23.4-x86_64.tar.gz /…   10.1MB    buildkit.dockerfile.v0
+Barsol@barsol-pc:~$ 
 ```
 
-### e. Zliczenie dokładnej ilości warstw wchodzących w skład obrazu:
-```bash
-   docker manifest inspect barsol/cloudcomputingproject:latest | grep -c "digest"
-```
 
-Wynik:
-```Bash
-Barsol@barsol-pc:~$    docker manifest inspect barsol/cloudcomputingproject:latest | grep -c "digest"
-4
-```
+
+# Zadanie 2
+
+
+## Opis Konfiguracji GitHub Actions
+
+W ramach realizacji zadania opracowano łańcuch CI/CD (pipeline) wykorzystujący mechanizm GitHub Actions, który poprawnie przeprowadza proces konteneryzacji. Proces składa się z następujących etapów:
+
+1. **Wsparcie Multi-Architecture (`linux/amd64`, `linux/arm64`)**: Zastosowano wtyczki `setup-qemu-action` i `setup-buildx-action`, które pozwalają platformie uruchomieniowej na cross kompilację.
+2. **Optymalizacja Cache'u w trybie Max**: Za uwierzytelnianie (Log in to DockerHub) odpowiadają specjalne wpisy (Secrets) `DOCKERHUB_USERNAME` i `DOCKERHUB_TOKEN`. Cache jest wgrywany przez backend i eksporter `registry` w trybie `mode=max`, co oznacza, że zachowane zostają warstwy pośrednie budowania aplikacji, znacznie przyspieszając kolejne uruchomienia.
+3. **Skanowanie podatności CVE obrazu (Trivy)**: Ponieważ Buildx nie wspiera eksportu multi-arch do wbudowanego lokalnego demona, użyto techniki dwuetapowej. Najpierw budowany jest lokalny obraz single-arch, który następnie skanowany jest narzędziem AquaSecurity Trivy. Konfiguracja wymusza kod błędu w przypadku wystąpienia awarii `exit-code: '1'` ze wskazaniem na podatności `severity: 'CRITICAL,HIGH'`. Skutkuje to zablokowaniem całego pipeline'u – jeśli obraz jest "dziurawy", nigdy nie dotrze do repozytorium docelowego GHCR.
+
+## Przyjęty sposób tagowania 
+
+Strategię dla końcowego obrazu podzielono na dwie strefy w celu zapewnienia maksymalnego bezpieczeństwa, separacji logiki cache'u i zachowania dobrych praktyk produkcyjnych (DevOps Best Practices).
+
+### 1. Tagowanie docelowych obrazów (GHCR)
+Obrazy docelowe, po pozytywnym przejściu weryfikacji Trivy, trafiają do repozytorium GitHub Container Registry i są natychmiast oznaczane dwoma tagami równocześnie:
+* **`latest`** (Mutable tag) – domyślny wskaźnik na świeżą, udaną budowę najnowszej wersji gałęzi głównej.
+* **`${{ github.sha }}`** (Immutable tag) – unikalny znacznik stanowiący hash konkretnego commita z platformy Git.
+
+**Uzasadnienie :** Zastosowanie tagu odpowiadającego SHA commita pozwala zachować pełną i jednoznaczną identyfikowalność (Traceability). Administrator operujący obrazem na produkcji zawsze posiada 100% pewności względem tego, z jakiego kawałka kodu źródłowego został zbudowany dany kontener. Poleganie wyłącznie na tagu `latest` może powodować problemy odtworzeniowe tzw. "Phantom Bugs" w przypadku nagłej awarii (rollback jest niesamowicie trudny, jeśli nie mamy wersji opartych o numer bądź SHA).
+
+### 2. Tagowanie danych w Cache'u (DockerHub)
+Dane Cache wyodrębniono do osobnego, **publicznego dedykowanego repozytorium u autora** o nazwie bazowej z sufiksem `-cache` (tj. `cloudcomputingproject-cache`). Obraz z "cachem" jest oznaczony specjalnym, statycznym tagiem **`:buildcache`**.
+
+**Uzasadnienie:** Wykorzystanie eksportera do rejestru ze wskaźnikiem na specjalnie oddzielone repozytorium skutecznie izoluje w pełni poprawne obrazy aplikacyjne od tzw. brudnych metadanych budowania. Dokumentacja *Docker Buildx / BuildKit* zaleca taką separację z racji faktu, że obrazy cache'owe składają się wyłącznie z binarnych zrzutów warstw bez manifestów uruchomieniowych – umieszczenie ich na obok oficjalnego obrazu skutkowałoby zanieczyszczeniem tagów pobieranych przez klientów i powiększaniem chaosu, dlatego zachowano czystą i hermetyczną segmentację tych danych pod jednym nadpisującym się tagiem `:buildcache`.
+
+---
+
+
