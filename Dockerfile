@@ -15,7 +15,7 @@ RUN apk add --no-cache git openssh-client
 RUN mkdir -p -m 0700 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 WORKDIR /src
 
-RUN --mount=type=ssh git clone git@github.com:Barsol6/CloudComputingProject.git .
+RUN git clone https://github.com/Barsol6/CloudComputingProject.git .
 
 WORKDIR /src/CloudComputingProject
 
